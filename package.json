@@ -1,0 +1,21 @@
+{
+  "name": "arayi-market",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "ARAYI Market — B2B marketplace for industrial machinery and wholesale import",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "5.18.2"
+  },
+  "devDependencies": {
+    "pagefind": "1.5.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

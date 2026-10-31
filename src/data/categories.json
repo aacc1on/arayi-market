@@ -1,0 +1,94 @@
+{
+  "categories": [
+    {
+      "slug": "cnc",
+      "icon": "cnc",
+      "title_hy": "CNC հաստոցներ",
+      "title_en": "CNC machines",
+      "title_ru": "Станки с ЧПУ",
+      "desc_hy": "Ֆրեզերային, խառատային, մշակման կենտրոններ և այլ CNC հաստոցներ՝ ուղիղ գործարանից։",
+      "desc_en": "Milling, turning, machining centers and other CNC machines, straight from the factory.",
+      "desc_ru": "Фрезерные, токарные станки, обрабатывающие центры и другое оборудование с ЧПУ напрямую с завода."
+    },
+    {
+      "slug": "laser",
+      "icon": "laser",
+      "title_hy": "Լազերային սարքավորումներ",
+      "title_en": "Laser equipment",
+      "title_ru": "Лазерное оборудование",
+      "desc_hy": "Մետաղի և ոչ մետաղական նյութերի լազերային կտրման, եռակցման և փորագրման սարքեր։",
+      "desc_en": "Laser cutting, welding and engraving machines for metal and non-metal materials.",
+      "desc_ru": "Лазерные станки для резки, сварки и гравировки металла и неметаллов."
+    },
+    {
+      "slug": "production-lines",
+      "icon": "line",
+      "title_hy": "Արտադրական գծեր",
+      "title_en": "Production lines",
+      "title_ru": "Производственные линии",
+      "desc_hy": "Ամբողջական արտադրական և հավաքման գծեր՝ նախագծումից մինչև տեղադրում։",
+      "desc_en": "Complete production and assembly lines, from design to installation.",
+      "desc_ru": "Комплексные производственные и сборочные линии — от проекта до монтажа."
+    },
+    {
+      "slug": "beverage",
+      "icon": "bottle",
+      "title_hy": "Խմիչքի արտադրություն",
+      "title_en": "Beverage production",
+      "title_ru": "Производство напитков",
+      "desc_hy": "Կեգեր, լցման և շշալցման սարքավորումներ՝ ջրի, հյութերի, գարեջրի և այլ խմիչքների համար։",
+      "desc_en": "Kegs, filling and bottling equipment for water, juices, beer and other drinks.",
+      "desc_ru": "Кеги, оборудование для розлива и бутилирования воды, соков, пива и других напитков."
+    },
+    {
+      "slug": "packaging",
+      "icon": "package",
+      "title_hy": "Փաթեթավորում և պլաստիկ",
+      "title_en": "Packaging & plastics",
+      "title_ru": "Упаковка и пластик",
+      "desc_hy": "Փաթեթավորման, պիտակավորման և պլաստիկի արտադրության սարքավորումներ։",
+      "desc_en": "Packaging, labeling and plastic processing machines.",
+      "desc_ru": "Оборудование для упаковки, этикетирования и переработки пластика."
+    },
+    {
+      "slug": "construction",
+      "icon": "helmet",
+      "title_hy": "Շինարարություն",
+      "title_en": "Construction",
+      "title_ru": "Строительство",
+      "desc_hy": "Շինարարական գործիքներ, սարքավորումներ և նյութեր՝ մեծածախ քանակներով։",
+      "desc_en": "Construction tools, equipment and materials in wholesale quantities.",
+      "desc_ru": "Строительные инструменты, оборудование и материалы оптом."
+    },
+    {
+      "slug": "heavy",
+      "icon": "excavator",
+      "title_hy": "Ծանր տեխնիկա",
+      "title_en": "Heavy machinery",
+      "title_ru": "Спецтехника",
+      "desc_hy": "Էքսկավատորներ, բեռնիչներ, ամբարձիչներ և այլ հատուկ տեխնիկա։",
+      "desc_en": "Excavators, loaders, cranes and other special machinery.",
+      "desc_ru": "Экскаваторы, погрузчики, краны и другая спецтехника."
+    },
+    {
+      "slug": "parts",
+      "icon": "gear",
+      "title_hy": "Պահեստամասեր",
+      "title_en": "Spare parts",
+      "title_ru": "Запчасти",
+      "desc_hy": "Պահեստամասեր հաստոցների, տեխնիկայի և ավտոմեքենաների համար։",
+      "desc_en": "Spare parts for machines, equipment and vehicles.",
+      "desc_ru": "Запчасти для станков, техники и автомобилей."
+    },
+    {
+      "slug": "other",
+      "icon": "box",
+      "title_hy": "Այլ ապրանքներ",
+      "title_en": "Other goods",
+      "title_ru": "Другие товары",
+      "desc_hy": "Չգտա՞ք ձեր կատեգորիան։ Ներմուծում ենք ցանկացած ապրանք՝ գրեք մեզ։",
+      "desc_en": "Can't find your category? We import any product — just ask.",
+      "desc_ru": "Не нашли свою категорию? Привезём любой товар — напишите нам."
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import { LANGS, LANG_LABEL, LANG_HTML, LANG_OG, t, path, switchLang, pick, type Lang } from '../i18n/ui';
+import { SITE, telLink, waLink } from '../lib/catalog';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  image?: string;
+  jsonld?: object | object[];
+  noindex?: boolean;
+  hreflang?: boolean;
+}
+const { lang, title, description, image = '/img/og-image.jpg', jsonld, noindex = false, hreflang = true } = Astro.props;
+const siteUrl = (Astro.site?.toString() ?? 'https://market.arayimport.am/').replace(/\/$/, '');
+const pathname = Astro.url.pathname;
+const canonical = siteUrl + pathname;
+const ogImage = image.startsWith('http') ? image : siteUrl + image;
+const lds = jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]) : [];
+const greeting = { hy: 'Բարև ձեզ, ունեմ հարց ARAYI Market-ից։', en: 'Hello, I have a question from ARAYI Market.', ru: 'Здравствуйте, у меня вопрос с ARAYI Market.' }[lang];
+---
+<!doctype html>
+<html lang={LANG_HTML[lang]}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="theme-color" content="#153A28" />
+  {noindex && <meta name="robots" content="noindex" />}
+  <link rel="canonical" href={canonical} />
+  {hreflang && LANGS.map((l) => <link rel="alternate" hreflang={l} href={siteUrl + switchLang(pathname, l)} />)}
+  {hreflang && <link rel="alternate" hreflang="x-default" href={siteUrl + switchLang(pathname, 'hy')} />}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ARAYI Market" />
+  <meta property="og:locale" content={LANG_OG[lang]} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/img/favicon.png" />
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600;700&family=Noto+Sans+Armenian:wght@400;500;600;700&family=Noto+Serif+Armenian:wght@500;600;700&display=swap" rel="stylesheet" />
+  {lds.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+  <slot name="head" />
+</head>
+<body>
+  <a class="skip" href="#main">{lang === 'hy' ? 'Անցնել բովանդակությանը' : lang === 'ru' ? 'К содержимому' : 'Skip to content'}</a>
+
+  <div class="topbar">
+    <div class="wrap">
+      <div class="topbar-left">
+        <a href={telLink()}><span><Icon name="phone" />{SITE.phone}</span></a>
+        <a href={`mailto:${SITE.email}`} class="hide-sm"><span><Icon name="mail" />{SITE.email}</span></a>
+        <span class="hide-sm"><Icon name="pin" />{pick(SITE, 'address', lang)}</span>
+      </div>
+      <nav class="langs" aria-label="Language">
+        {LANGS.map((l) => (
+          <a href={switchLang(pathname, l)} hreflang={l} lang={l} aria-current={l === lang ? 'true' : undefined}>{LANG_LABEL[l]}</a>
+        ))}
+      </nav>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="wrap">
+      <a class="brand" href={path.home(lang)} aria-label="ARAYI Market">
+        <img src="/img/mark.png" alt="" width="46" height="31" />
+        <span class="brand-text"><span class="brand-name">ARAYI</span><span class="brand-sub">MARKET</span></span>
+      </a>
+      <form class="hsearch" action={path.search(lang)} method="get" role="search">
+        <label class="sr-only" for="hq">{t(lang, 'nav.search')}</label>
+        <input id="hq" name="q" type="search" placeholder={t(lang, 'search.placeholder')} autocomplete="off" />
+        <button type="submit" aria-label={t(lang, 'search.button')}><Icon name="search" /></button>
+      </form>
+      <button class="menu-btn" type="button" aria-controls="nav" aria-expanded="false" aria-label={t(lang, 'nav.menu')}><Icon name="menu" /></button>
+      <nav class="nav" id="nav" aria-label={t(lang, 'nav.menu')}>
+        <a href={path.catalog(lang)}>{t(lang, 'nav.catalog')}</a>
+        <a href={`${path.home(lang)}#categories`}>{t(lang, 'nav.categories')}</a>
+        <a href={SITE.main_site} rel="noopener">{t(lang, 'nav.main')}</a>
+        <a class="btn btn-gold" href={path.rfq(lang)}>{t(lang, 'nav.rfq')}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <slot />
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div>
+        <div class="footer-brand">
+          <img src="/img/mark.png" alt="" width="44" height="30" />
+          <span class="brand-text"><span class="brand-name">ARAYI</span><span class="brand-sub">MARKET</span></span>
+        </div>
+        <p>{t(lang, 'footer.about')}</p>
+        <div class="socials">
+          <a href={SITE.facebook} target="_blank" rel="noopener" aria-label="Facebook"><Icon name="facebook" /></a>
+          <a href={SITE.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Icon name="instagram" /></a>
+          <a href={SITE.tiktok} target="_blank" rel="noopener" aria-label="TikTok"><Icon name="tiktok" /></a>
+          <a href={SITE.telegram} target="_blank" rel="noopener" aria-label="Telegram"><Icon name="telegram" /></a>
+        </div>
+      </div>
+      <div>
+        <h3>{t(lang, 'nav.catalog')}</h3>
+        <ul>
+          <li><a href={path.catalog(lang)}>{t(lang, 'catalog.all')}</a></li>
+          <li><a href={path.category(lang, 'cnc')}>{lang === 'hy' ? 'CNC հաստոցներ' : lang === 'ru' ? 'Станки с ЧПУ' : 'CNC machines'}</a></li>
+          <li><a href={path.category(lang, 'production-lines')}>{lang === 'hy' ? 'Արտադրական գծեր' : lang === 'ru' ? 'Производственные линии' : 'Production lines'}</a></li>
+          <li><a href={path.category(lang, 'beverage')}>{lang === 'hy' ? 'Խմիչքի արտադրություն' : lang === 'ru' ? 'Производство напитков' : 'Beverage production'}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>{t(lang, 'footer.links')}</h3>
+        <ul>
+          <li><a href={path.rfq(lang)}>{t(lang, 'nav.rfq')}</a></li>
+          <li><a href={path.search(lang)}>{t(lang, 'nav.search')}</a></li>
+          <li><a href={SITE.main_site} rel="noopener">{t(lang, 'footer.main')}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>{t(lang, 'contact.title')}</h3>
+        <ul>
+          <li><a href={telLink()}>{SITE.phone}</a></li>
+          <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+          <li>{pick(SITE, 'address', lang)}</li>
+          <li>{pick(SITE, 'hours', lang)}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="wrap">
+        <span>© {new Date().getFullYear()} ARAYI. {t(lang, 'footer.rights')}</span>
+        <a href={SITE.main_site} rel="noopener">arayimport.am</a>
+      </div>
+    </div>
+  </footer>
+
+  <a class="fab-wa" href={waLink(greeting)} target="_blank" rel="noopener" aria-label="WhatsApp"><Icon name="whatsapp" /></a>
+
+  <script>
+    const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+    const nav = document.getElementById('nav');
+    btn?.addEventListener('click', () => {
+      const open = nav?.classList.toggle('open') ?? false;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { LANGS, t, pick, path, type Lang } from '../../i18n/ui';
+import { categories, getProducts, SITE, waLink } from '../../lib/catalog';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+const products = await getProducts();
+const featured = products.filter((p) => p.featured).slice(0, 8);
+const counts = Object.fromEntries(categories.map((c) => [c.slug, products.filter((p) => p.category === c.slug).length]));
+const from = [
+  ['/img/flag-cn.png', 'origin.CN'], ['/img/flag-eu.png', 'origin.EU'], ['/img/flag-us.png', 'origin.US'],
+  ['/img/flag-ae.png', 'origin.AE'], ['/img/flag-ru.png', 'origin.RU'], ['/img/flag-ir.png', 'origin.IR'],
+] as const;
+const siteUrl = 'https://market.arayimport.am';
+const jsonld = [
+  {
+    '@context': 'https://schema.org', '@type': 'Organization', name: 'ARAYI', url: SITE.main_site,
+    logo: `${siteUrl}/img/mark.png`, email: SITE.email, telephone: SITE.phone,
+    address: { '@type': 'PostalAddress', streetAddress: '4/2 Yerevanyan St', addressLocality: 'Yeghvard', addressRegion: 'Kotayk', addressCountry: 'AM' },
+    sameAs: [SITE.facebook, SITE.instagram, SITE.tiktok],
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'WebSite', name: 'ARAYI Market', url: `${siteUrl}/${lang}/`, inLanguage: lang,
+    potentialAction: { '@type': 'SearchAction', target: `${siteUrl}/${lang}/search/?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+  },
+];
+const steps = [1, 2, 3, 4] as const;
+const why = [['factory', 1], ['shield', 2], ['truck', 3], ['office', 4]] as const;
+---
+<Base lang={lang} title={L('meta.home.title')} description={L('meta.home.desc')} jsonld={jsonld}>
+  <section class="hero" style="--hero-img:url('/img/transport.jpg')">
+    <div class="wrap">
+      <span class="kicker">{L('hero.kicker')}</span>
+      <h1>{L('hero.title')}</h1>
+      <p class="lead">{L('hero.lead')}</p>
+      <form class="hero-search" action={path.search(lang)} method="get" role="search">
+        <label class="sr-only" for="hero-q">{L('nav.search')}</label>
+        <input id="hero-q" name="q" type="search" placeholder={L('search.placeholder')} />
+        <button class="btn btn-forest" type="submit"><Icon name="search" />{L('search.button')}</button>
+      </form>
+      <div class="hero-actions">
+        <a class="btn btn-gold" href={path.rfq(lang)}>{L('hero.cta')}<Icon name="arrow" /></a>
+        <a class="btn btn-ghost" href={path.catalog(lang)}>{L('hero.cta2')}</a>
+      </div>
+      <div class="hero-from">
+        <span>{L('hero.from')}</span>
+        {from.map(([src, key]) => <span><img src={src} alt="" width="26" height="18" />{L(key)}</span>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="categories">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>{L('home.cats.title')}</h2><p>{L('home.cats.lead')}</p></div>
+      </div>
+      <div class="cats">
+        {categories.map((c) => (
+          <a class="cat" href={path.category(lang, c.slug)}>
+            <span class="cat-ico"><Icon name={c.icon} /></span>
+            <strong>{pick(c, 'title', lang)}</strong>
+            <small>{counts[c.slug] > 0 ? `${counts[c.slug]} ${L('catalog.count')}` : L('cat.onrequest')}</small>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {featured.length > 0 && (
+    <section class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>{L('home.featured.title')}</h2>
+          <a class="link-arrow" href={path.catalog(lang)}>{L('home.featured.all')}<Icon name="arrow" /></a>
+        </div>
+        <div class="grid">{featured.map((p) => <ProductCard p={p} lang={lang} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="wrap">
+      <div class="banner">
+        <div>
+          <h2>{L('home.source.title')}</h2>
+          <p>{L('home.source.lead')}</p>
+        </div>
+        <div class="banner-actions">
+          <a class="btn btn-gold" href={path.rfq(lang)}>{L('home.source.cta')}</a>
+          <a class="btn btn-wa" href={waLink(L('home.source.lead'))} target="_blank" rel="noopener"><Icon name="whatsapp" />WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="wrap">
+      <div class="section-head"><h2>{L('home.steps.title')}</h2></div>
+      <div class="steps">
+        {steps.map((n) => (
+          <div class="step">
+            <div class="step-n">{n}</div>
+            <h3>{L(`step${n}.t`)}</h3>
+            <p>{L(`step${n}.d`)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><h2>{L('home.why.title')}</h2></div>
+      <div class="why">
+        {why.map(([icon, n]) => (
+          <div class="why-item">
+            <Icon name={icon} />
+            <div><h3>{L(`why${n}.t`)}</h3><p>{L(`why${n}.d`)}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

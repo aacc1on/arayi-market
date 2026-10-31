@@ -1,0 +1,124 @@
+---
+// Request-for-quotation form. Posts to /api/rfq (Cloudflare Pages Function).
+// If the backend is unavailable, it opens WhatsApp with the same text instead.
+import Icon from './Icon.astro';
+import { t, type Lang } from '../i18n/ui';
+import { SITE, digits, waLink } from '../lib/catalog';
+interface Props { lang: Lang; product?: string; id?: string; heading?: boolean }
+const { lang, product = '', id = 'rfq', heading = true } = Astro.props;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+const opt = `<small>(${L('rfq.optional')})</small>`;
+---
+<form class="form" id={id} data-rfq data-lang={lang} data-wa={digits(SITE.whatsapp)} novalidate>
+  {heading && <h2>{L('rfq.form.title')}</h2>}
+  <div class="form-grid">
+    <div class="field">
+      <label for={`${id}-name`}>{L('rfq.name')} *</label>
+      <input id={`${id}-name`} name="name" autocomplete="name" required maxlength="120" />
+    </div>
+    <div class="field">
+      <label for={`${id}-phone`}>{L('rfq.phone')} *</label>
+      <input id={`${id}-phone`} name="phone" type="tel" autocomplete="tel" required maxlength="40" placeholder="+374" />
+    </div>
+    <div class="field">
+      <label for={`${id}-company`} set:html={`${L('rfq.company')} ${opt}`} />
+      <input id={`${id}-company`} name="company" autocomplete="organization" maxlength="160" />
+    </div>
+    <div class="field">
+      <label for={`${id}-email`} set:html={`${L('rfq.email')} ${opt}`} />
+      <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="160" />
+    </div>
+    <div class="field full">
+      <label for={`${id}-product`}>{L('rfq.product')}</label>
+      <input id={`${id}-product`} name="product" value={product} maxlength="200" data-prefill="product" />
+    </div>
+    <div class="field">
+      <label for={`${id}-quantity`} set:html={`${L('rfq.quantity')} ${opt}`} />
+      <input id={`${id}-quantity`} name="quantity" maxlength="80" />
+    </div>
+    <div class="field">
+      <label for={`${id}-location`} set:html={`${L('rfq.location')} ${opt}`} />
+      <input id={`${id}-location`} name="location" maxlength="120" />
+    </div>
+    <div class="field full">
+      <label for={`${id}-budget`} set:html={`${L('rfq.budget')} ${opt}`} />
+      <input id={`${id}-budget`} name="budget" maxlength="120" />
+    </div>
+    <div class="field full">
+      <label for={`${id}-message`}>{L('rfq.message')}</label>
+      <textarea id={`${id}-message`} name="message" maxlength="3000" placeholder={L('rfq.message.ph')}></textarea>
+    </div>
+  </div>
+  <div class="hp" aria-hidden="true">
+    <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+  </div>
+  <button class="btn btn-gold btn-block" type="submit" style="margin-top:16px">{L('rfq.submit')}</button>
+  <div class="form-msg" role="status" aria-live="polite" hidden></div>
+  <p class="form-note">{L('rfq.privacy')}</p>
+  <div class="form-or">
+    <span>{L('rfq.or')}</span>
+    <a class="btn btn-wa" href={waLink('')} target="_blank" rel="noopener"><Icon name="whatsapp" />WhatsApp</a>
+  </div>
+  <template data-i18n
+    data-sending={L('rfq.sending')} data-submit={L('rfq.submit')} data-ok-title={L('rfq.ok.title')}
+    data-ok-text={L('rfq.ok.text')} data-fail={L('rfq.fail')} data-required={L('rfq.required')}
+    data-l-name={L('rfq.name')} data-l-company={L('rfq.company')} data-l-phone={L('rfq.phone')} data-l-email={L('rfq.email')}
+    data-l-product={L('rfq.product')} data-l-quantity={L('rfq.quantity')} data-l-location={L('rfq.location')}
+    data-l-budget={L('rfq.budget')} data-l-message={L('rfq.message')}></template>
+</form>
+
+<script>
+  const FIELDS = ['name', 'company', 'phone', 'email', 'product', 'quantity', 'location', 'budget', 'message'];
+
+  document.querySelectorAll<HTMLFormElement>('form[data-rfq]').forEach((form) => {
+    const i18n = (form.querySelector('template[data-i18n]') as HTMLElement).dataset;
+    const msg = form.querySelector<HTMLElement>('.form-msg')!;
+    const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+
+    // ?product=… prefill (from product cards and pages)
+    const pre = new URLSearchParams(location.search).get('product');
+    const pInput = form.querySelector<HTMLInputElement>('[data-prefill=product]');
+    if (pre && pInput && !pInput.value) pInput.value = pre;
+
+    const show = (kind: 'ok' | 'err', html: string) => {
+      msg.hidden = false;
+      msg.className = `form-msg ${kind}`;
+      msg.innerHTML = html;
+    };
+
+    const waText = (data: Record<string, string>) => {
+      const lines = FIELDS.filter((f) => data[f]).map((f) => `${(i18n as any)['l' + f[0].toUpperCase() + f.slice(1)]}: ${data[f]}`);
+      return lines.join('\n') + `\n${location.href}`;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const data: Record<string, string> = {};
+      FIELDS.forEach((f) => (data[f] = String(fd.get(f) ?? '').trim()));
+      if (!data.name || !data.phone) {
+        show('err', i18n.required!);
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = i18n.sending!;
+      try {
+        const res = await fetch('/api/rfq', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ...data, website: String(fd.get('website') ?? ''), lang: form.dataset.lang, page: location.pathname }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) throw new Error(out.error || String(res.status));
+        form.reset();
+        show('ok', `<strong>${i18n.okTitle}</strong><br>${i18n.okText}`);
+      } catch {
+        show('err', i18n.fail!);
+        window.open(`https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(waText(data))}`, '_blank', 'noopener');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = i18n.submit!;
+      }
+    });
+  });
+</script>

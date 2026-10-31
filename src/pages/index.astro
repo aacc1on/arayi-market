@@ -1,0 +1,20 @@
+---
+// Root: send visitors to the Armenian version (Cloudflare also redirects via public/_redirects).
+---
+<!doctype html>
+<html lang="hy">
+<head>
+  <meta charset="utf-8" />
+  <title>ARAYI Market</title>
+  <meta name="robots" content="noindex" />
+  <link rel="canonical" href="https://market.arayimport.am/hy/" />
+  <meta http-equiv="refresh" content="0; url=/hy/" />
+  <script is:inline>
+    (function () {
+      var l = (navigator.language || 'hy').slice(0, 2).toLowerCase();
+      location.replace('/' + (l === 'ru' ? 'ru' : l === 'en' ? 'en' : 'hy') + '/');
+    })();
+  </script>
+</head>
+<body><a href="/hy/">ARAYI Market</a></body>
+</html>

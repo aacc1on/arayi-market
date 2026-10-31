@@ -1,0 +1,28 @@
+---
+import { t, pick, path, originName, type Lang } from '../i18n/ui';
+import { catTitle, flag, mainImage, priceText, type Product } from '../lib/catalog';
+interface Props { p: Product; lang: Lang }
+const { p, lang } = Astro.props;
+const title = pick(p, 'title', lang);
+const url = path.product(lang, p.slug);
+const price = priceText(p, lang, { request: t(lang, 'product.price.request'), from: t(lang, 'product.price.from') });
+const moq = pick(p, 'moq', lang);
+---
+<article class="card" data-cat={p.category} data-title={`${p.title_hy} ${p.title_en} ${p.title_ru}`.toLowerCase()}>
+  <a class="card-img" href={url} tabindex="-1" aria-hidden="true">
+    <img src={mainImage(p)} alt="" loading="lazy" decoding="async" width="800" height="600" />
+  </a>
+  <div class="card-body">
+    <span class="card-cat">{catTitle(p.category, lang)}</span>
+    <h3><a href={url}>{title}</a></h3>
+    {pick(p, 'summary', lang) && <p>{pick(p, 'summary', lang)}</p>}
+    <div class="card-meta">
+      {p.origin && <span class="chip">{flag(p.origin) && <img src={flag(p.origin)} alt="" />}{originName(lang, p.origin)}</span>}
+      {moq && <span class="chip">MOQ: {moq}</span>}
+    </div>
+  </div>
+  <div class="card-foot">
+    <span class="card-price"><small>{t(lang, 'product.price')}</small>{price}</span>
+    <a class="btn btn-forest" href={path.rfq(lang, title)}>{t(lang, 'product.quote')}</a>
+  </div>
+</article>

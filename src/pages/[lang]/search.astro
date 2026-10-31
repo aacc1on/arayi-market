@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { LANGS, t, path, type Lang } from '../../i18n/ui';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+---
+<Base lang={lang} title={`${L('search.title')} — ARAYI Market`} description={L('search.lead')} noindex>
+  <link slot="head" href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  <div class="page-head">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={path.home(lang)}>{L('crumb.home')}</a><span aria-hidden="true">/</span><span>{L('search.title')}</span></nav>
+      <h1>{L('search.title')}</h1>
+      <p>{L('search.lead')}</p>
+    </div>
+  </div>
+  <section class="section" style="padding-top:28px">
+    <div class="wrap">
+      <div id="search" class="search-box" data-placeholder={L('search.placeholder')} data-clear={L('pf.clear')} data-zero={L('pf.zero')} data-many={L('pf.many')} data-one={L('pf.one')} data-filters={L('pf.filters')} data-more={L('pf.more')}></div>
+      <div class="banner" style="margin-top:40px">
+        <div><h2>{L('home.source.title')}</h2><p>{L('home.source.lead')}</p></div>
+        <div class="banner-actions"><a class="btn btn-gold" href={path.rfq(lang)}>{L('home.source.cta')}<Icon name="arrow" /></a></div>
+      </div>
+    </div>
+  </section>
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline>
+    (function () {
+      var el = document.getElementById('search');
+      if (!window.PagefindUI || !el) return;
+      var ui = new PagefindUI({ element: '#search', showSubResults: false, showImages: true, resetStyles: false, translations: { placeholder: el.dataset.placeholder, search_label: el.dataset.placeholder, clear_search: el.dataset.clear, zero_results: el.dataset.zero, many_results: el.dataset.many, one_result: el.dataset.one, filters_label: el.dataset.filters, load_more: el.dataset.more } });
+      var q = new URLSearchParams(location.search).get('q');
+      if (q) ui.triggerSearch(q);
+    })();
+  </script>
+</Base>

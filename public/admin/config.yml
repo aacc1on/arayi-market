@@ -1,0 +1,189 @@
+# ARAYI Market — կառավարման վահանակ (Sveltia CMS)
+# Բացվում է https://market.arayimport.am/admin հասցեով։ Մուտք՝ GitHub token-ով (տե՛ս README)։
+# Ամեն պահպանում commit է դառնում GitHub-ում, և Cloudflare Pages-ը կայքը թարմացնում է 1–2 րոպեում։
+
+backend:
+  name: github
+  repo: aacc1on/arayi-market
+  branch: main
+
+app_title: ARAYI Market — Կառավարում
+logo:
+  src: /img/favicon.png
+site_url: https://market.arayimport.am
+display_url: https://market.arayimport.am
+
+media_folder: public/images/products
+public_folder: /images/products
+
+media_libraries:
+  default:
+    config:
+      slugify_filename: true
+      max_file_size: 15000000
+      transformations:
+        raster_image:
+          format: webp
+          quality: 82
+          width: 1600
+          height: 1600
+
+collections:
+  - name: products
+    label: Ապրանքներ
+    label_singular: Ապրանք
+    description: Մարկետի ապրանքները։ Ամեն ապրանք առանձին էջ է երեք լեզվով։
+    icon: inventory_2
+    folder: src/content/products
+    extension: json
+    format: json
+    create: true
+    slug: "{{fields.slug}}"
+    identifier_field: title_hy
+    summary: "{{title_hy}}"
+    sortable_fields: [order, title_hy, category]
+    view_filters:
+      - { label: Հրապարակված, field: published, pattern: true }
+      - { label: Առաջարկվող, field: featured, pattern: true }
+    editor:
+      preview: false
+    fields:
+      - { name: title_hy, label: Անուն (հայերեն), widget: string }
+      - { name: title_en, label: Name (English), widget: string, required: false }
+      - { name: title_ru, label: Название (русский), widget: string, required: false }
+      - name: slug
+        label: Հասցե (slug)
+        widget: string
+        pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Միայն լատինատառ փոքրատառեր, թվեր և գծիկ, օր.՝ cnc-milling-machine']
+        hint: Էջի հասցեն կլինի market.arayimport.am/hy/p/<slug>/։ Հրապարակելուց հետո մի փոխեք։
+      - name: category
+        label: Կատեգորիա
+        widget: select
+        options:
+          - { label: CNC հաստոցներ, value: cnc }
+          - { label: Լազերային սարքավորումներ, value: laser }
+          - { label: Արտադրական գծեր, value: production-lines }
+          - { label: Խմիչքի արտադրություն, value: beverage }
+          - { label: Փաթեթավորում և պլաստիկ, value: packaging }
+          - { label: Շինարարություն, value: construction }
+          - { label: Ծանր տեխնիկա, value: heavy }
+          - { label: Պահեստամասեր, value: parts }
+          - { label: Այլ ապրանքներ, value: other }
+      - name: images
+        label: Նկարներ
+        widget: image
+        multiple: true
+        required: false
+        hint: Առաջին նկարը գլխավորն է։ Լավագույնը՝ հորիզոնական (4:3), սպիտակ կամ մաքուր ֆոնով։
+      - { name: summary_hy, label: Կարճ նկարագրություն (հայերեն), widget: text, required: false, hint: "1–2 նախադասություն, երևում է քարտում և Google-ում" }
+      - { name: summary_en, label: Short description (English), widget: text, required: false }
+      - { name: summary_ru, label: Краткое описание (русский), widget: text, required: false }
+      - { name: description_hy, label: Ամբողջական նկարագրություն (հայերեն), widget: text, required: false }
+      - { name: description_en, label: Full description (English), widget: text, required: false }
+      - { name: description_ru, label: Полное описание (русский), widget: text, required: false }
+      - name: origin
+        label: Ծագման երկիր
+        widget: select
+        default: CN
+        options:
+          - { label: Չինաստան, value: CN }
+          - { label: Եվրոպա, value: EU }
+          - { label: Գերմանիա, value: DE }
+          - { label: Իտալիա, value: IT }
+          - { label: Թուրքիա, value: TR }
+          - { label: ԱՄՆ, value: US }
+          - { label: ԱՄԷ, value: AE }
+          - { label: Ռուսաստան, value: RU }
+          - { label: Իրան, value: IR }
+          - { label: Կորեա, value: KR }
+          - { label: Ճապոնիա, value: JP }
+      - name: price_mode
+        label: Գին
+        widget: select
+        default: request
+        options:
+          - { label: Ըստ հարցման, value: request }
+          - { label: Սկսած…, value: from }
+          - { label: Միջակայք (…–…), value: range }
+      - { name: price_from, label: Գին՝ սկսած (թիվ), widget: number, value_type: int, required: false }
+      - { name: price_to, label: Գին՝ մինչև (թիվ), widget: number, value_type: int, required: false }
+      - name: currency
+        label: Արժույթ
+        widget: select
+        default: USD
+        options: [USD, EUR, AMD, CNY, RUB]
+      - { name: price_unit_hy, label: Միավոր (հայերեն), widget: string, required: false, hint: "օր.՝ հատ, կոմպլեկտ, տոննա" }
+      - { name: price_unit_en, label: Unit (English), widget: string, required: false }
+      - { name: price_unit_ru, label: Единица (русский), widget: string, required: false }
+      - { name: moq_hy, label: Նվազագույն պատվեր (հայերեն), widget: string, required: false, hint: "օր.՝ 1 հատ, 50 հատ" }
+      - { name: moq_en, label: Minimum order (English), widget: string, required: false }
+      - { name: moq_ru, label: Минимальный заказ (русский), widget: string, required: false }
+      - { name: lead_time_hy, label: Արտադրման ժամկետ (հայերեն), widget: string, required: false, hint: "օր.՝ 30–45 օր" }
+      - { name: lead_time_en, label: Lead time (English), widget: string, required: false }
+      - { name: lead_time_ru, label: Срок производства (русский), widget: string, required: false }
+      - name: specs
+        label: Բնութագրեր
+        label_singular: բնութագիր
+        widget: list
+        required: false
+        collapsed: true
+        summary: "{{fields.label_hy}}: {{fields.value}}"
+        fields:
+          - { name: label_hy, label: Անվանում (հայերեն), widget: string }
+          - { name: label_en, label: Name (English), widget: string, required: false }
+          - { name: label_ru, label: Название (русский), widget: string, required: false }
+          - { name: value, label: Արժեք, widget: string, hint: "օր.՝ 3000 × 1500 մմ, 6 կՎտ, 380 Վ" }
+      - { name: featured, label: Ցույց տալ գլխավոր էջում, widget: boolean, default: false }
+      - { name: published, label: Հրապարակված, widget: boolean, default: true }
+      - { name: order, label: Հերթականություն, widget: number, value_type: int, default: 100, hint: "Փոքր թիվը ավելի վերևում է" }
+
+  - name: settings
+    label: Կարգավորումներ
+    icon: settings
+    editor:
+      preview: false
+    files:
+      - name: site
+        label: Կապի տվյալներ
+        file: src/data/site.json
+        format: json
+        fields:
+          - { name: phone, label: Հեռախոս, widget: string }
+          - { name: whatsapp, label: WhatsApp, widget: string }
+          - { name: viber, label: Viber, widget: string }
+          - { name: telegram, label: Telegram հղում, widget: string }
+          - { name: email, label: Էլ. փոստ, widget: string }
+          - { name: address_hy, label: Հասցե (հայերեն), widget: string }
+          - { name: address_en, label: Address (English), widget: string }
+          - { name: address_ru, label: Адрес (русский), widget: string }
+          - { name: hours_hy, label: Ժամեր (հայերեն), widget: string }
+          - { name: hours_en, label: Hours (English), widget: string }
+          - { name: hours_ru, label: Часы (русский), widget: string }
+          - { name: main_site, label: Հիմնական կայք, widget: string }
+          - { name: facebook, label: Facebook, widget: string }
+          - { name: instagram, label: Instagram, widget: string }
+          - { name: tiktok, label: TikTok, widget: string }
+      - name: categories
+        label: Կատեգորիաներ
+        file: src/data/categories.json
+        format: json
+        fields:
+          - name: categories
+            label: Կատեգորիաներ
+            label_singular: կատեգորիա
+            widget: list
+            collapsed: true
+            summary: "{{fields.title_hy}}"
+            hint: Նոր կատեգորիա ավելացնելիս նույն slug-ը ավելացրեք նաև Ապրանքներ → Կատեգորիա ցանկում (admin/config.yml)։
+            fields:
+              - { name: slug, label: Slug, widget: string }
+              - name: icon
+                label: Պատկերակ
+                widget: select
+                options: [cnc, laser, line, bottle, package, helmet, excavator, gear, box, factory, truck]
+              - { name: title_hy, label: Անուն (հայերեն), widget: string }
+              - { name: title_en, label: Name (English), widget: string }
+              - { name: title_ru, label: Название (русский), widget: string }
+              - { name: desc_hy, label: Նկարագրություն (հայերեն), widget: text }
+              - { name: desc_en, label: Description (English), widget: text }
+              - { name: desc_ru, label: Описание (русский), widget: text }

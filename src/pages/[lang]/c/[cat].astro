@@ -1,0 +1,52 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Icon from '../../../components/Icon.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import RfqForm from '../../../components/RfqForm.astro';
+import { LANGS, t, pick, path, type Lang } from '../../../i18n/ui';
+import { categories, getProducts, waLink } from '../../../lib/catalog';
+
+export function getStaticPaths() {
+  return LANGS.flatMap((lang) => categories.map((c) => ({ params: { lang, cat: c.slug }, props: { c } })));
+}
+const { c } = Astro.props;
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+const items = (await getProducts()).filter((p) => p.category === c.slug);
+const title = pick(c, 'title', lang);
+const desc = pick(c, 'desc', lang);
+---
+<Base lang={lang} title={`${title} — ARAYI Market`} description={desc}>
+  <div class="page-head">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href={path.home(lang)}>{L('crumb.home')}</a><span aria-hidden="true">/</span>
+        <a href={path.catalog(lang)}>{L('catalog.title')}</a><span aria-hidden="true">/</span><span>{title}</span>
+      </nav>
+      <h1>{title}</h1>
+      <p>{desc}</p>
+    </div>
+  </div>
+  <section class="section" style="padding-top:28px">
+    <div class="wrap">
+      {items.length > 0 ? (
+        <>
+          <p class="count">{items.length} {L('catalog.count')}</p>
+          <div class="grid">{items.map((p) => <ProductCard p={p} lang={lang} />)}</div>
+        </>
+      ) : (
+        <div class="rfq-layout">
+          <div class="empty" style="text-align:left">
+            <span class="cat-ico" style="margin-bottom:14px"><Icon name={c.icon} /></span>
+            <h2>{L('cat.empty.title')}</h2>
+            <p style="margin-left:0">{L('cat.empty.lead')}</p>
+            <div class="hero-actions" style="justify-content:flex-start">
+              <a class="btn btn-wa" href={waLink(`${title}: ${L('cat.empty.lead')}`)} target="_blank" rel="noopener"><Icon name="whatsapp" />WhatsApp</a>
+            </div>
+          </div>
+          <RfqForm lang={lang} product={title} />
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

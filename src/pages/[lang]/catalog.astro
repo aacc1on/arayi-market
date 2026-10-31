@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { LANGS, t, pick, path, type Lang } from '../../i18n/ui';
+import { categories, getProducts } from '../../lib/catalog';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+const products = await getProducts();
+const used = categories.filter((c) => products.some((p) => p.category === c.slug));
+---
+<Base lang={lang} title={`${L('catalog.title')} — ARAYI Market`} description={L('catalog.lead')}>
+  <div class="page-head">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={path.home(lang)}>{L('crumb.home')}</a><span aria-hidden="true">/</span><span>{L('catalog.title')}</span></nav>
+      <h1>{L('catalog.title')}</h1>
+      <p>{L('catalog.lead')}</p>
+    </div>
+  </div>
+  <section class="section" style="padding-top:28px">
+    <div class="wrap">
+      <div class="filters" role="toolbar" aria-label={L('nav.categories')}>
+        <button type="button" data-filter="" aria-pressed="true">{L('catalog.all')}</button>
+        {used.map((c) => <button type="button" data-filter={c.slug} aria-pressed="false">{pick(c, 'title', lang)}</button>)}
+        <label class="sr-only" for="cf">{L('catalog.filter')}</label>
+        <input id="cf" type="search" placeholder={L('catalog.filter')} />
+      </div>
+      <p class="count"><span data-count>{products.length}</span> {L('catalog.count')}</p>
+      <div class="grid" data-grid>{products.map((p) => <ProductCard p={p} lang={lang} />)}</div>
+      <p class="empty" data-empty hidden>{L('catalog.empty')}</p>
+    </div>
+  </section>
+  <script>
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const input = document.getElementById('cf') as HTMLInputElement;
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-grid] .card'));
+    const count = document.querySelector('[data-count]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+    let cat = new URLSearchParams(location.search).get('c') ?? '';
+    function apply() {
+      const q = input.value.trim().toLowerCase();
+      let n = 0;
+      for (const c of cards) {
+        const ok = (!cat || c.dataset.cat === cat) && (!q || (c.dataset.title ?? '').includes(q));
+        c.hidden = !ok;
+        if (ok) n++;
+      }
+      count.textContent = String(n);
+      empty.hidden = n > 0;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === cat)));
+    }
+    buttons.forEach((b) => b.addEventListener('click', () => { cat = b.dataset.filter ?? ''; apply(); }));
+    input.addEventListener('input', apply);
+    apply();
+  </script>
+</Base>

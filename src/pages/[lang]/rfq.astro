@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import RfqForm from '../../components/RfqForm.astro';
+import { LANGS, t, pick, path, type Lang } from '../../i18n/ui';
+import { SITE, telLink, waLink } from '../../lib/catalog';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+---
+<Base lang={lang} title={`${L('rfq.title')} — ARAYI Market`} description={L('rfq.lead')}>
+  <div class="page-head">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={path.home(lang)}>{L('crumb.home')}</a><span aria-hidden="true">/</span><span>{L('rfq.title')}</span></nav>
+      <h1>{L('rfq.title')}</h1>
+      <p>{L('rfq.lead')}</p>
+    </div>
+  </div>
+  <section class="section" style="padding-top:28px">
+    <div class="wrap rfq-layout">
+      <RfqForm lang={lang} />
+      <aside class="side">
+        <div class="side-box">
+          <h3>{L('rfq.side.title')}</h3>
+          <ul>{(['rfq.side.1', 'rfq.side.2', 'rfq.side.3', 'rfq.side.4'] as const).map((k) => <li><Icon name="check" />{L(k)}</li>)}</ul>
+        </div>
+        <div class="side-box">
+          <h3>{L('contact.title')}</h3>
+          <ul>
+            <li><Icon name="phone" /><a href={telLink()}>{SITE.phone}</a></li>
+            <li><Icon name="whatsapp" /><a href={waLink('')} target="_blank" rel="noopener">WhatsApp</a></li>
+            <li><Icon name="mail" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+            <li><Icon name="pin" />{pick(SITE, 'address', lang)}</li>
+            <li><Icon name="clock" />{pick(SITE, 'hours', lang)}</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>

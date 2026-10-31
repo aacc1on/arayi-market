@@ -1,0 +1,142 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Icon from '../../../components/Icon.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import RfqForm from '../../../components/RfqForm.astro';
+import { LANGS, t, pick, path, originName, type Lang } from '../../../i18n/ui';
+import { getProducts, catTitle, flag, mainImage, priceText, waLink, categoryBySlug, type Product } from '../../../lib/catalog';
+
+export async function getStaticPaths() {
+  const products = await getProducts();
+  return LANGS.flatMap((lang) => products.map((p) => ({ params: { lang, slug: p.slug }, props: { p, all: products } })));
+}
+const { p, all } = Astro.props as { p: Product; all: Product[] };
+const lang = Astro.params.lang as Lang;
+const L = (k: Parameters<typeof t>[1]) => t(lang, k);
+const siteUrl = 'https://market.arayimport.am';
+const title = pick(p, 'title', lang);
+const summary = pick(p, 'summary', lang);
+const description = pick(p, 'description', lang);
+const moq = pick(p, 'moq', lang);
+const lead = pick(p, 'lead_time', lang);
+const price = priceText(p, lang, { request: L('product.price.request'), from: L('product.price.from') });
+const cat = categoryBySlug(p.category);
+const url = `${siteUrl}${path.product(lang, p.slug)}`;
+const images = p.images.length ? p.images : [mainImage(p)];
+const related = all.filter((x) => x.category === p.category && x.slug !== p.slug).slice(0, 4);
+const metaDesc = summary || `${title} — ${L('product.default.about')}`.slice(0, 300);
+const waText = L('product.wa.text').replace('{title}', title).replace('{url}', url);
+
+const offer =
+  p.price_mode !== 'request' && p.price_from
+    ? { '@type': 'Offer', priceCurrency: p.currency, price: p.price_from, availability: 'https://schema.org/PreOrder', url }
+    : undefined;
+const jsonld = [
+  {
+    '@context': 'https://schema.org', '@type': 'Product', name: title, image: images.map((i) => siteUrl + i),
+    description: description || summary || undefined, category: cat ? pick(cat, 'title', lang) : undefined,
+    brand: { '@type': 'Brand', name: 'ARAYI' }, url,
+    ...(offer ? { offers: offer } : {}),
+    ...(p.specs.length ? { additionalProperty: p.specs.map((s) => ({ '@type': 'PropertyValue', name: pick(s, 'label', lang), value: s.value })) } : {}),
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: L('crumb.home'), item: `${siteUrl}/${lang}/` },
+      { '@type': 'ListItem', position: 2, name: cat ? pick(cat, 'title', lang) : L('catalog.title'), item: `${siteUrl}${path.category(lang, p.category)}` },
+      { '@type': 'ListItem', position: 3, name: title, item: url },
+    ],
+  },
+];
+---
+<Base lang={lang} title={`${title} — ARAYI Market`} description={metaDesc} image={images[0]} jsonld={jsonld}>
+  <div class="page-head" style="padding:16px 0">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href={path.home(lang)}>{L('crumb.home')}</a><span aria-hidden="true">/</span>
+        <a href={path.category(lang, p.category)}>{catTitle(p.category, lang)}</a><span aria-hidden="true">/</span><span>{title}</span>
+      </nav>
+    </div>
+  </div>
+
+  <div class="wrap" data-pagefind-body>
+    <div class="product">
+      <div>
+        <div class="gallery-main"><img id="gmain" src={images[0]} alt={title} width="800" height="600" data-pagefind-meta="image[src], image_alt[alt]" /></div>
+        {images.length > 1 && (
+          <div class="thumbs" data-pagefind-ignore>
+            {images.map((src, i) => (
+              <button type="button" data-src={src} aria-current={i === 0 ? 'true' : 'false'} aria-label={`${title} ${i + 1}`}><img src={src} alt="" loading="lazy" /></button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <a class="p-cat" href={path.category(lang, p.category)} data-pagefind-filter={L('product.category')}>{catTitle(p.category, lang)}</a>
+        <h1 data-pagefind-meta="title">{title}</h1>
+        {summary && <p class="p-summary">{summary}</p>}
+        <div class="facts" data-pagefind-ignore>
+          <div class="fact"><small>{L('product.price')}</small><strong>{price}</strong></div>
+          {p.origin && <div class="fact"><small>{L('product.origin')}</small><strong>{flag(p.origin) && <img src={flag(p.origin)} alt="" />}{originName(lang, p.origin)}</strong></div>}
+          {moq && <div class="fact"><small>{L('product.moq')}</small><strong>{moq}</strong></div>}
+          {lead && <div class="fact"><small>{L('product.lead')}</small><strong>{lead}</strong></div>}
+        </div>
+        <div class="p-actions" data-pagefind-ignore>
+          <a class="btn btn-gold" href="#rfq">{L('product.quote')}</a>
+          <a class="btn btn-wa" href={waLink(waText)} target="_blank" rel="noopener"><Icon name="whatsapp" />{L('product.whatsapp')}</a>
+        </div>
+        <div class="included" data-pagefind-ignore>
+          <h2>{L('product.included')}</h2>
+          <ul>
+            {(['inc1', 'inc2', 'inc3', 'inc4'] as const).map((k) => <li><Icon name="check" />{L(k)}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <section class="p-section">
+      <h2>{L('product.about')}</h2>
+      <p class="prose">{description || L('product.default.about')}</p>
+    </section>
+
+    {p.specs.length > 0 && (
+      <section class="p-section">
+        <h2>{L('product.specs')}</h2>
+        <table class="specs">
+          <tbody>{p.specs.map((s) => <tr><th scope="row">{pick(s, 'label', lang)}</th><td>{s.value}</td></tr>)}</tbody>
+        </table>
+      </section>
+    )}
+  </div>
+
+  <section class="section" style="padding-bottom:0" data-pagefind-ignore>
+    <div class="wrap rfq-layout">
+      <RfqForm lang={lang} product={title} />
+      <aside class="side">
+        <div class="side-box">
+          <h3>{L('rfq.side.title')}</h3>
+          <ul>{(['rfq.side.1', 'rfq.side.2', 'rfq.side.3', 'rfq.side.4'] as const).map((k) => <li><Icon name="check" />{L(k)}</li>)}</ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="section" data-pagefind-ignore>
+      <div class="wrap">
+        <div class="section-head"><h2>{L('product.related')}</h2></div>
+        <div class="grid">{related.map((r) => <ProductCard p={r} lang={lang} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <script>
+    const main = document.getElementById('gmain') as HTMLImageElement | null;
+    document.querySelectorAll<HTMLButtonElement>('.thumbs button').forEach((b, _, all) => {
+      b.addEventListener('click', () => {
+        if (main && b.dataset.src) main.src = b.dataset.src;
+        all.forEach((x) => x.setAttribute('aria-current', String(x === b)));
+      });
+    });
+  </script>
+</Base>

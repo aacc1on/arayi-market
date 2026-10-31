@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import { t, path } from '../i18n/ui';
+const lang = 'hy' as const;
+---
+<Base lang={lang} title={`${t(lang, 'notfound.title')} — ARAYI Market`} description={t(lang, 'notfound.lead')} noindex hreflang={false}>
+  <section class="section">
+    <div class="wrap">
+      <div class="empty">
+        <h1 style="font-size:2rem">404</h1>
+        <h2>{t('hy', 'notfound.title')} · Page not found · Страница не найдена</h2>
+        <p>{t('hy', 'notfound.lead')}</p>
+        <div class="hero-actions">
+          <a class="btn btn-forest" href={path.catalog('hy')}>Կատալոգ</a>
+          <a class="btn btn-line" href={path.catalog('en')}>Catalog</a>
+          <a class="btn btn-line" href={path.catalog('ru')}>Каталог</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
