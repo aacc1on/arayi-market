@@ -1,0 +1,21 @@
+// Cloudflare Workers config. Workers Builds runs `npm run build`, then `npx wrangler deploy`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "arayi-market",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "preview_urls": false,
+  // Keep variables added in the dashboard (Settings → Variables and Secrets) between deploys.
+  "keep_vars": true,
+  "observability": { "enabled": true }
+
+  // D1 (optional): create the database, run schema.sql, then uncomment and paste its ID.
+  // ,"d1_databases": [{ "binding": "DB", "database_name": "arayi-market", "database_id": "PASTE-DATABASE-ID" }]
+}

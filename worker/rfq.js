@@ -1,19 +1,19 @@
-// Cloudflare Pages Function: POST /api/rfq
-// Saves a request for quotation to D1 (binding "DB") and/or sends it to Telegram
-// (env TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID). Without either, it answers 503 and the
+// POST /api/rfq — request for quotation.
+// Saves the request to D1 (binding "DB") and/or sends it to Telegram
+// (secrets TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID). Without either, it answers 503 and the
 // site falls back to opening WhatsApp with the same text.
 
 const FIELDS = ['name', 'company', 'phone', 'email', 'product', 'quantity', 'location', 'budget', 'message', 'lang', 'page'];
 const MAX = { name: 120, company: 160, phone: 40, email: 160, product: 200, quantity: 80, location: 120, budget: 120, message: 3000, lang: 5, page: 300 };
 const LABELS = { name: 'Անուն', company: 'Ընկերություն', phone: 'Հեռախոս', email: 'Էլ. փոստ', product: 'Ապրանք', quantity: 'Քանակ', location: 'Քաղաք/երկիր', budget: 'Բյուջե', message: 'Մանրամասներ', page: 'Էջ' };
 
-const json = (body, status = 200) =>
+export const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 
 const clean = (v, max) => String(v ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max);
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 
-export async function onRequestPost({ request, env }) {
+export async function handleRfq(request, env) {
   // same-origin only
   const origin = request.headers.get('origin');
   if (origin && new URL(origin).host !== new URL(request.url).host) return json({ ok: false, error: 'origin' }, 403);
@@ -67,8 +67,4 @@ export async function onRequestPost({ request, env }) {
 
   if (!stored && !notified) return json({ ok: false, error: 'not_configured' }, 503);
   return json({ ok: true, stored, notified });
-}
-
-export function onRequestGet() {
-  return json({ ok: false, error: 'method' }, 405);
 }
